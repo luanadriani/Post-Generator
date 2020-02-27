@@ -1,2 +1,2 @@
-# video-maker
-Projeto para fazer videos automatizados
+# Post-Generator
+Projeto para gerar posts automatizados
