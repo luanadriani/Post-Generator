@@ -16,7 +16,7 @@ function robot(){
 	}
 
     function askAndReturnUrl(){
-		return readline.question('Type a Url From belasmensagens.com.br: (Digite > 0000 para Padrão)')
+		return readline.question('Type a Url From belasmensagens.com.br: (Digite > 0000 para Padrão): ')
 	}
 }
 

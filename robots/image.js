@@ -27,7 +27,7 @@ async function robot(){
 
 	async function fetchImagesOfAllSentences(content){
 		for(let sentenceIndex = 0; sentenceIndex < content.sentences.length; sentenceIndex++){
-			let query = `${content.searchTerm} ${content.sentences[sentenceIndex].keywords[0]}`
+			let query = `${content.sentences[sentenceIndex].keywords[0]} ${content.sentences[sentenceIndex].keywords[1]}`
 
 			console.log(`> [image-robot] Querying Google Images with: "${query}"`)
 
