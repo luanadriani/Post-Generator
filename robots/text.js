@@ -1,10 +1,12 @@
-const algorithmia = require('algorithmia')
-const algorithmiaApiKey = require('../credentials/algorithmia.json').apiKey
 const sentenceBoundaryDetection = require('sbd')
 
 const watsonApiKey = require('../credentials/watson-nlu.json').apikey
-const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
-const { IamAuthenticator } = require('ibm-watson/auth');
+const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1')
+const { IamAuthenticator } = require('ibm-watson/auth')
+
+const rp = require('request-promise')
+const $ = require('cheerio');
+const padrao = 'https://www.belasmensagens.com.br/mensagens-deus'
 
 const state = require('./state.js')
 
@@ -16,61 +18,45 @@ const nlu = new NaturalLanguageUnderstandingV1({
 
 async function robot() {
   console.log('> Text robot starting...');
-	const content = state.load()
-	await fetchContentFromWikipedia(content)
-	sanitizeContent(content)
+
+    const content = state.load()
+    
+	await fetchPhraseFromMensagensDeDeus(content)
 	breakContentIntoSentences(content)
 	limitMaximumSentences(content)
 	await fetchKeywordsOfAllSentences(content)
 
 	state.save(content)
 
-	async function fetchContentFromWikipedia(content){
-    console.log('> [text-robot] Fetching content from wikipedia');
-		const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey)
-        const wikipediaAlgorithm = algorithmiaAuthenticated.algo('web/WikipediaParser/0.1.2')
-        
-        const term = {
-            'articleName': content.searchTerm,
-            'lang': content.lang
+	async function fetchPhraseFromMensagensDeDeus(content){
+    console.log('> [text-robot] Fetching Phrase from Mensagem de Deus');
+        const phrases = [];
+
+        if(content.url == '0000'){
+            content.url = padrao
         }
 
-		const wikipediaResponse = await wikipediaAlgorithm.pipe(term)
-		const wikipediaContent = wikipediaResponse.get()
+        await rp(content.url)
+        .then(function(html){
+            for (let i = 0; i < 24; i++) {
+                phrases.push($('#grid > div > div > div > p', html)[i].children[0].data)
+            }
+        })
+        .catch(function(err){
+            //handle error
+        });
 
-		content.sourceContentOriginal = wikipediaContent.content
+        content.sourceContentOriginal = phrases[Math.round(Math.random() * (24 - 0) + 0)]
+
+        console.log(`> [text-robot] Phrase > ${content.sourceContentOriginal}`)
+        
     console.log('> [text-robot] fetching done!');
-	}
-
-	function sanitizeContent(content){
-		const withoutBlackLinesAndMarkdown = removeBlankLinesAndMarkdown(content.sourceContentOriginal)
-		const withoutDatesInParenteses = removeDatesInParenteses(withoutBlackLinesAndMarkdown)
-
-		content.sourceContentSanitized = withoutDatesInParenteses
-
-		function removeBlankLinesAndMarkdown(text){
-			const allLines = text.split('\n')
-
-			const withoutBlackLinesAndMarkdown = allLines.filter((line) => {
-				if (line.trim().length === 0 || line.trim().startsWith('=')) {
-					return false
-				}
-
-				return true
-			})
-
-			return withoutBlackLinesAndMarkdown.join(' ')
-		}
-
-		function removeDatesInParenteses(text){
-			return text.replace(/\((?:\([^()]*\)|[^()])*\)/gm, '').replace(/  /g,' ')
-		}
 	}
 
 	function breakContentIntoSentences(content){
 		content.sentences = []
 
-		const sentences = sentenceBoundaryDetection.sentences(content.sourceContentSanitized)
+		const sentences = [content.sourceContentOriginal]
 		sentences.forEach((sentence) => {
 			content.sentences.push({
 				text: sentence,

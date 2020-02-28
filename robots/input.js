@@ -1,41 +1,22 @@
 const readline = require('readline-sync')
 const state = require('./state.js')
 
-function robot(search){
+function robot(){
 	const content = {
-		maximumSentences: 7
+        maximumSentences: 1
     }
     
-    if(search){
-        content.searchTerm = search.term
-        content.prefix = search.prefix
-        content.lang = search.lang
-    } else{
-        content.searchTerm = askAndReturnSearchTerm()
-        content.prefix = askAndReturnPrefix()
-        content.lang = askAndReturnLang()
-    }
-	
+    content.searchTerm = askAndReturnSearchTerm()
+    content.url = askAndReturnUrl()
+    
 	state.save(content)
 
 	function askAndReturnSearchTerm(){
-		return readline.question('Type a Wikipedia search term: ')
+		return readline.question('Type a Image search term: ')
 	}
 
-	function askAndReturnPrefix(){
-		const prefixes = ['Who is', 'What is', 'The history of']
-		const selectedPrefixIndex = readline.keyInSelect(prefixes, 'Choose one option: ')
-		const selectedPrefixText = prefixes[selectedPrefixIndex]
-
-		return selectedPrefixText
-    }
-
-    function askAndReturnLang(){
-		const lang = ['pt', 'en']
-		const selectedLangIndex = readline.keyInSelect(lang, 'Choose one option: ')
-		const selectedLangText = lang[selectedLangIndex]
-
-		return selectedLangText
+    function askAndReturnUrl(){
+		return readline.question('Type a Url From belasmensagens.com.br: (Digite > 0000 para Padrão)')
 	}
 }
 
