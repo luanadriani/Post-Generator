@@ -1,2 +1,2 @@
 # Post-Generator
-Projeto para gerar posts automatizados
+Projeto para fazer posts automatizados, utilizando varias APIs, Node JS.
